@@ -3,7 +3,7 @@ function git_prompt_info() {
   if [[ "$(command git config --get oh-my-zsh.hide-status 2>/dev/null)" != "1" ]]; then
     ref=$(command git symbolic-ref HEAD 2> /dev/null) || \
     ref=$(command git rev-parse --short HEAD 2> /dev/null) || return 0
-    echo "$ZSH_THEME_GIT_PROMPT_PREFIX${ref#refs/heads/}$(parse_git_dirty)$ZSH_THEME_GIT_PROMPT_SUFFIX"
+    echo "$ZSH_THEME_GIT_PROMPT_PREFIX$(git_at_tag)${ref#refs/heads/}$(parse_git_dirty)$ZSH_THEME_GIT_PROMPT_SUFFIX"
   fi
 }
 
@@ -50,6 +50,18 @@ git_remote_status() {
             echo "$ZSH_THEME_GIT_PROMPT_DIVERGED_REMOTE"
         fi
     fi
+}
+
+# Get up to ten tags for HEAD
+git_at_tag() {
+  if [[ $POST_1_7_10_GIT -gt 0 ]]; then
+    tag=$(command git describe --tags --exact-match HEAD 2> /dev/null)
+  else
+    tag=$(command git tag --points-at HEAD 2> /dev/null | head | paste -s -d ' ' -)
+  fi
+  if [[ -n $tag ]]; then
+    echo "$tag @ "
+  fi
 }
 
 # Checks if there are commits ahead from remote
@@ -137,6 +149,7 @@ function git_compare_version() {
 
 #this is unlikely to change so make it all statically assigned
 POST_1_7_2_GIT=$(git_compare_version "1.7.2")
+POST_1_7_10_GIT=$(git_compare_version "1.7.10")
 #clean up the namespace slightly by removing the checker function
 unset -f git_compare_version
 
