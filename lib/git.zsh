@@ -60,7 +60,7 @@ git_at_tag() {
     tag=$(command git describe --tags --exact-match HEAD 2> /dev/null)
   fi
   if [[ -n $tag ]]; then
-    echo "$tag @ "
+    echo -n "$tag @ "
   fi
 }
 
